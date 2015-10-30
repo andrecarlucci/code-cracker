@@ -17,7 +17,7 @@ namespace CodeCracker.CSharp.Design
             "not creating a virtual, abstract, new or partial method, and if it is not a method override, " +
             "your instance method may be changed to a static method.";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.MakeMethodStatic.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -69,7 +69,7 @@ namespace CodeCracker.CSharp.Design
                 if (!dataFlowAnalysis.Succeeded) return;
                 if (dataFlowAnalysis.DataFlowsIn.Any(inSymbol => inSymbol.Name == "this")) return;
             }
-            else if (method.Body.Statements.Count > 0)
+            else if (method.Body.Statements.Any())
             {
                 var dataFlowAnalysis = semanticModel.AnalyzeDataFlow(method.Body);
                 if (!dataFlowAnalysis.Succeeded) return;

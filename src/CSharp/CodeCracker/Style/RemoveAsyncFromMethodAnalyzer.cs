@@ -15,7 +15,7 @@ namespace CodeCracker.CSharp.Style
         internal const string Category = SupportedCategories.Style;
         const string Description = "Remove Async termination when method is not asynchronous.";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.RemoveAsyncFromMethod.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -23,7 +23,7 @@ namespace CodeCracker.CSharp.Style
             DiagnosticSeverity.Info,
             isEnabledByDefault: true,
             description: Description,
-            helpLinkUri: HelpLink.ForDiagnostic(DiagnosticId.PropertyPrivateSet));
+            helpLinkUri: HelpLink.ForDiagnostic(DiagnosticId.RemoveAsyncFromMethod));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

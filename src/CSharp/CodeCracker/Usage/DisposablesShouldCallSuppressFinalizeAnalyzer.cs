@@ -15,7 +15,7 @@ namespace CodeCracker.CSharp.Usage
         const string Description = "Classes implementing IDisposable should call the GC.SuppressFinalize method in their "
             + "finalize method to avoid any finalizer from being called.\r\n"
             + "This rule should be followed even if the class doesn't have a finalizer as a derived class could have one.";
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.DisposablesShouldCallSuppressFinalize.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -60,7 +60,7 @@ namespace CodeCracker.CSharp.Usage
         private static ISymbol FindDisposeMethod(INamedTypeSymbol symbol)
         {
             return symbol.GetMembers().Where(x => x.ToString().Contains($"{x.ContainingType.Name}.Dispose(")).Cast<IMethodSymbol>()
-                .FirstOrDefault(m => m.Parameters == null || m.Parameters.Count() == 0);
+                .FirstOrDefault(m => m.Parameters == null || m.Parameters.Length == 0);
         }
 
         public static bool ContainsUserDefinedFinalizer(INamedTypeSymbol symbol)

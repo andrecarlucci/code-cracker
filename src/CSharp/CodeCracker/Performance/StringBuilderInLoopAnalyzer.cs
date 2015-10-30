@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace CodeCracker.CSharp.Usage
 {
@@ -16,7 +17,7 @@ namespace CodeCracker.CSharp.Usage
         const string Description = "Do not concatenate a string on a loop. It will alocate a lot of memory."
             + "Use a StringBuilder instead. It will will require less allocation, less garbage collector work, less CPU cycles, and less overall time.";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.StringBuilderInLoop.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -56,6 +57,8 @@ namespace CodeCracker.CSharp.Usage
                 if ((type as IArrayTypeSymbol)?.ElementType?.SpecialType != SpecialType.System_String) return;
             }
             else if (type.Name != "String") return;
+            // Do not analyze a string declared within the loop.
+            if (symbolForAssignment is ILocalSymbol && whileStatement.DescendantTokens(((ILocalSymbol)symbolForAssignment).DeclaringSyntaxReferences[0].Span).Any()) return;
             if (assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression))
             {
                 if (!(assignmentExpression.Right?.IsKind(SyntaxKind.AddExpression) ?? false)) return;

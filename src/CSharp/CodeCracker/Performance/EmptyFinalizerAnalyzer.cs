@@ -17,7 +17,7 @@ namespace CodeCracker.CSharp.Performance
             + "Garbage Collector when no longer used."
             + "It will instead be placed in the finalizer queue needlessly using resources.";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.EmptyFinalizer.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -41,7 +41,7 @@ namespace CodeCracker.CSharp.Performance
 
             if (body == null) return;
 
-            if (body.DescendantNodes().Count(n => !n.IsKind(SyntaxKind.SingleLineCommentTrivia | SyntaxKind.MultiLineCommentTrivia)) > 0) return;
+            if (body.DescendantNodes().Any(n => !n.IsKind(SyntaxKind.SingleLineCommentTrivia | SyntaxKind.MultiLineCommentTrivia))) return;
 
             context.ReportDiagnostic(Diagnostic.Create(Rule, finalizer.GetLocation(), finalizer.Identifier.Text));
         }

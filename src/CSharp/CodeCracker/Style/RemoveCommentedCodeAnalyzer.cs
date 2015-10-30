@@ -14,7 +14,7 @@ namespace CodeCracker.CSharp.Style
         internal const string Title = "Remove commented code.";
         internal const string MessageFormat = "Commented code should be removed.";
         internal const string Category = SupportedCategories.Style;
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.RemoveCommentedCode.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -82,7 +82,7 @@ namespace CodeCracker.CSharp.Style
                 return true;
             }
 
-            if (diagnostics.Count() != 0) return false;
+            if (diagnostics.Length != 0) return false;
 
             return true;
         }

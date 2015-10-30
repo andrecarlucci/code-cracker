@@ -16,7 +16,7 @@ namespace CodeCracker.CSharp.Refactoring
         internal const string Category = SupportedCategories.Refactoring;
         const string Description = "Consider introduce field for constructor parameters.";
 
-        internal static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId.IntroduceFieldFromConstructor.ToDiagnosticId(),
             Title,
             MessageFormat,
@@ -24,7 +24,7 @@ namespace CodeCracker.CSharp.Refactoring
             DiagnosticSeverity.Hidden,
             isEnabledByDefault: true,
             description: Description,
-            helpLinkUri: HelpLink.ForDiagnostic(DiagnosticId.TaskNameAsync));
+            helpLinkUri: HelpLink.ForDiagnostic(DiagnosticId.IntroduceFieldFromConstructor));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -99,7 +99,7 @@ namespace CodeCracker.Test.CSharp.Style
         private int id;
         public int Id
         {
-            get { id = value; }
+            set { id = value; }
         }
 ".WrapInCSharpClass();
             await VerifyCSharpHasNoDiagnosticsAsync(source);
@@ -305,6 +305,92 @@ namespace ConsoleApplication1
         }
 
         [Fact]
+        public async Task FixSimplePropWithFieldAssigmentIntoAutoProp()
+        {
+            var source = @"
+        private int id = 42;
+        public int Id
+        {
+            get { return id; }
+            set { id = value; }
+        }//comment 1
+".WrapInCSharpClass();
+            var expected = @"public int Id { get; set; } = 42;//comment 1
+".WrapInCSharpClass();
+            await VerifyCSharpFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task FixSimplePropWithMultipleFieldsIntoAutoProp()
+        {
+            const string source = @"
+                private int x = 42, y; //comment 1
+                public int X
+                {
+                    get { return x; }
+                    set { x = value; }
+                }";
+
+            const string expected = @"
+                private int y; //comment 1
+                public int X { get; set; } = 42;";
+
+            await VerifyCSharpFixAsync(source.WrapInCSharpClass(), expected.WrapInCSharpClass());
+        }
+
+        [Fact]
+        public async Task FixSimplePropWithVaribleDeclarationNotFirstIntoAutoProp()
+        {
+            const string source = @"
+                private int x, y = 42; //comment 1
+                public int Y
+                {
+                    get { return y; }
+                    set { y = value; }
+                }";
+
+            const string expected = @"
+                private int x; //comment 1
+                public int Y { get; set; } = 42;";
+
+            await VerifyCSharpFixAsync(source.WrapInCSharpClass(), expected.WrapInCSharpClass());
+        }
+
+
+        [Fact(Skip = "Skip until the FixAll has been fixed.")]
+        public async Task FixSimplePropWithMultipleFieldsIntoAutoPropAll()
+        {
+            const string source = @"
+                private int x = 42, y;
+                private int z = int.MaxValue;
+
+                public int X
+                {
+                    get { return x; }
+                    set { x = value; }
+                }
+
+                public int Y
+                {
+                    get { return y; }
+                    set { y = value; }
+                }
+
+                public int Z
+                {
+                    get { return z; }
+                    set { z = value; }
+                }";
+
+            const string expected = @"
+                public int X { get; set; } = 42;
+                public int Y { get; set; }
+                public int Z { get; set; } = int.MaxValue;";
+
+            await VerifyCSharpFixAllAsync(source.WrapInCSharpClass(), expected.WrapInCSharpClass());
+        }
+
+        [Fact]
         public async Task FixPropIntoAutoPropAndFixFieldReferencesInSameClass()
         {
             var source = @"
@@ -360,6 +446,34 @@ namespace ConsoleApplication1
         }
 ".WrapInCSharpClass("OtherType");
             await VerifyCSharpFixAllAsync(new[] { source1, source2 }, new[] { expected1, expected2 });
+        }
+
+        [Fact]
+        public async Task FixPropIntoAutoPropAndFixKeepingXMLComments()
+        {
+            var source = @"
+        public class Foo
+        {
+            private int x = 10; 
+            /// <summary>
+            /// comment 1
+            /// </summary>
+            public int X 
+            {
+                get { return x; }
+                set { x = value; }
+            }
+        }";
+
+            var expected = @"
+        public class Foo
+        {
+            /// <summary>
+            /// comment 1
+            /// </summary>
+            public int X { get; set; } = 10;
+        }";
+            await VerifyCSharpFixAllAsync(source, expected);
         }
     }
 }

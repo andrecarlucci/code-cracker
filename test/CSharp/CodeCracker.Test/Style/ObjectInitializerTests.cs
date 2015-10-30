@@ -43,6 +43,24 @@ namespace CodeCracker.Test.CSharp.Style
         }
 
         [Fact]
+        public async Task WhenUsedWithCollectionDoesNotCreateDiagnostic()
+        {
+            const string source = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                var ys = new System.Collections.Generic.List<int> { 4 };
+                ys.Capacity = 3;
+            }
+        }
+    }";
+            await VerifyCSharpHasNoDiagnosticsAsync(source);
+        }
+
+        [Fact]
         public async Task WhenVariableIsDeclaredAndObjectIsCreatedButNoAssignmentsHappenLaterAnalyzerDoesNotCreateDiagnostic()
         {
             const string source = @"
@@ -325,6 +343,49 @@ namespace CodeCracker.Test.CSharp.Style
     }";
             await VerifyCSharpHasNoDiagnosticsAsync(source);
         }
+
+        [Fact]
+        public async Task WhenUsingANewVariableDeclaredAndAssigningToPropertiesOfJustCreatedObjectWithAssignmentTriviaChangeToObjectInitializersFix()
+        {
+            const string source = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                string a;
+                var p = new Person();
+                #pragma warning disable CS0618
+                p.Name = ""Giovanni""; // A name.
+                #pragma warning restore CS0618
+                p.Age = 25; // An age.
+                string b;
+            }
+        }
+    }";
+
+            const string fixtest = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                string a;
+                var p = new Person
+                {
+                    #pragma warning disable CS0618
+                    Name = ""Giovanni"", // A name.
+                    #pragma warning restore CS0618
+                    Age = 25 // An age.
+                };
+                string b;
+            }
+        }
+    }";
+            await VerifyCSharpFixAsync(source, fixtest, 0);
+        }
     }
 
     public class ObjectInitializerWithAssignmentTests : CodeFixVerifier<ObjectInitializerAnalyzer, ObjectInitializerCodeFixProvider>
@@ -347,6 +408,26 @@ namespace CodeCracker.Test.CSharp.Style
     }";
             await VerifyCSharpHasNoDiagnosticsAsync(source);
         }
+
+        [Fact]
+        public async Task WhenUsedWithCollectionDoesNotCreateDiagnostic()
+        {
+            const string source = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                System.Collections.Generic.List<int> ys;
+                ys = new System.Collections.Generic.List<int> { 4 };
+                ys.Capacity = 3;
+            }
+        }
+    }";
+            await VerifyCSharpHasNoDiagnosticsAsync(source);
+        }
+
 
         [Fact]
         public async Task WhenCreatingObjectAndAssigningPropertiesThenAnalyzerCreatesDiagnostic()
@@ -394,6 +475,7 @@ namespace CodeCracker.Test.CSharp.Style
     }";
             await VerifyCSharpHasNoDiagnosticsAsync(source);
         }
+
 
         [Fact]
         public async Task WhenObjectIsCreatedButOnlyUnrelatedAssignmentsHappenLaterAnalyzerDoesNotCreateDiagnostic()
@@ -451,6 +533,55 @@ namespace CodeCracker.Test.CSharp.Style
                 {
                     Name = ""Giovanni"",
                     Age = 25
+                };
+                //some comment after
+                string b;
+            }
+        }
+    }";
+            await VerifyCSharpFixAsync(source, fixtest, 0);
+        }
+
+        [Fact]
+        public async Task WhenUsingAPreviouslyDeclaredVariableAndAssigningToPropertiesOfJustCreatedObjectWithAssignmentTriviaChangeToObjectInitializersFix()
+        {
+            const string source = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                string a;
+                //some comment before
+                Person p;
+                p = new Person();
+                #pragma warning disable CS0618
+                p.Name = ""Giovanni""; // A name.
+                #pragma warning restore CS0618
+                p.Age = 25; // An age.
+                //some comment after
+                string b;
+            }
+        }
+    }";
+
+            const string fixtest = @"
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public int Foo()
+            {
+                string a;
+                //some comment before
+                Person p;
+                p = new Person
+                {
+                    #pragma warning disable CS0618
+                    Name = ""Giovanni"", // A name.
+                    #pragma warning restore CS0618
+                    Age = 25 // An age.
                 };
                 //some comment after
                 string b;
